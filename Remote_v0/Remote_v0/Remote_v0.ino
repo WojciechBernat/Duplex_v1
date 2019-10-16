@@ -27,8 +27,8 @@
 uint8_t TxBuffer[32];
 uint8_t RxBuffer[32];
 
-uint8_t TxAddresses[5];
-uint8_t RxAddresses[5];
+uint8_t TxAddresses[5] = {0x0A, 0x0A, 0x0A, 0x0A, 0x01};
+uint8_t RxAddresses[5] = {0x0B, 0x0B, 0x0B, 0x0B, 0x02};
 
 /* Prototypes */
 
