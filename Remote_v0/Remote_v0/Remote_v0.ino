@@ -13,9 +13,7 @@
 #include <RF24.h>
 
 /* Directives and Macros */
-#define SPI_SPEED_LOW       2   //2 MHz for RF24 instance's constructor
-#define SPI_SPEED_MEDIUM    4   //4 MHz
-#define SPI_SPEED_HIGH      8   //8 MHz
+
 
 /* Variables */
 
@@ -24,7 +22,7 @@
 /* Prototypes */
 
 /* Init */
-RF24 radio(7, 8, SPI_SPEED_LOW );    //Create an RF24 object - set CE - pin 7, CN - pin 8, SPI bus speed 
+RF24 radio(7, 8 );    //Create an RF24 object - set CE - pin 7, CN - pin 8
 
 void setup() {
   
