@@ -22,6 +22,8 @@
 #define RX_PIN_LED 5
 
 /* Variables */
+String TxLedName = "TX LED";
+String RxLedName = "RX LED";
 
 /* Arrays */
 uint8_t TxBuffer[32];
@@ -32,6 +34,8 @@ uint8_t RxAddresses[5] = {0x0A, 0x0A, 0x0A, 0x0A, 0x01};
 
 /* Prototypes */
 void Blink(uint8_t ledPin = 0, uint16_t blinkTime = 200 );  //Funkcja z wartosciami domyslnymi
+void bufferReset(uint8_t *buf, uint8_t bufSize);
+void pinsInitPrint(String pinNum, String Name);
 
 /* Init */
 
@@ -45,8 +49,13 @@ void setup() {
   /* Pin init */
   pinMode(TX_PIN_LED, OUTPUT);
   pinMode(RX_PIN_LED, OUTPUT);
-  Serial.println("\nTX, RX LED pins OK\n");
-  /* add blink function in this place */
+  pinsInitPrint(String(TX_PIN_LED), TxLedName);
+  pinsInitPrint(String(RX_PIN_LED), RxLedName);
+  Blink(TX_PIN_LED);
+  Blink(RX_PIN_LED);
+  
+
+  
 
 }
 
@@ -75,4 +84,13 @@ void Blink(uint8_t ledPin, uint16_t blinkTime) {
     delay(blinkTime);
     digitalWrite(ledPin, LOW);
   }
+}
+
+void bufferReset(uint8_t *buf, uint8_t bufSize) {            //Funkcja resetowanai bufora
+  for (uint8_t i = 0; i < bufSize; i++) {
+    buf[i] = 0;
+  }
+}
+void pinsInitPrint(String pinNum, String Name) {
+  Serial.println("Correct initialization of pin " +  pinNum  + " : " + Name);
 }
