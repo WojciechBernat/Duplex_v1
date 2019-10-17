@@ -24,8 +24,12 @@
 /* Variables */
 String TxLedName = "TX LED";
 String RxLedName = "RX LED";
+String TxBufName = "TxBuffer";
+String RxBufName = "RxBuffer";
 
-uint16_t defaultBlinkTime = 200;
+uint8_t  SwitchON  = 0xF0;        // value of state switch ON
+uint8_t  SwitchOFF = 0x0F;        // value of state switch OFF
+uint16_t defaultBlinkTime = 0xFF;  // value of blink time - 255ms ;
 
 /* Arrays */
 uint8_t TxBuffer[32];
@@ -39,7 +43,10 @@ boolean Blink(uint8_t ledPin = 0, uint16_t blinkTime = defaultBlinkTime);       
 boolean doubleBlink(uint8_t ledPin_1, uint8_t ledPin_2, uint16_t blinkTime = defaultBlinkTime);
 void pinsInitPrint(String pinNum, String Name);
 void pinsInit( uint8_t LedPin_1, uint8_t LedPin_2, String Name_1, String Name_2 );
+
 void bufferReset(uint8_t *buf, uint8_t bufSize);
+void bufferResetPrint( String bufferName);
+void cleanBuffers(uint8_t *buf_1, uint8_t bufSize_1, uint8_t *buf_2, uint8_t bufSize_2, String bufferName_1, String bufferName_2 );
 
 
 /* Init */
@@ -52,10 +59,10 @@ void setup() {
   Serial.println("\nRemote application start\nUART init OK\n");
 
   /* Pin init */
- pinsInit( TX_PIN_LED, RX_PIN_LED, TxLedName, RxLedName );
-
-
-
+  pinsInit( TX_PIN_LED, RX_PIN_LED, TxLedName, RxLedName );
+  /* Buffer reset - clean cells of arrays */
+  cleanBuffers(TxBuffer, sizeof(TxBuffer), RxBuffer, sizeof(RxBuffer), TxBufName, RxBufName);
+  
 }
 
 void loop() {
@@ -124,7 +131,7 @@ boolean doubleBlink(uint8_t ledPin_1, uint8_t ledPin_2, uint16_t blinkTime) {
 }
 
 void pinsInitPrint(String pinNum, String Name) {
-  Serial.println("Correct initialization of pin " +  pinNum  + " : " + Name);
+  Serial.println("\nCorrect initialization of pin " +  pinNum  + " : " + Name + "\n");
 }
 
 void pinsInit( uint8_t LedPin_1, uint8_t LedPin_2, String Name_1, String Name_2 ) {
@@ -135,9 +142,19 @@ void pinsInit( uint8_t LedPin_1, uint8_t LedPin_2, String Name_1, String Name_2 
   doubleBlink(LedPin_1, LedPin_2);           //toDebug
 }
 
-
 void bufferReset(uint8_t *buf, uint8_t bufSize) {            //Funkcja resetowanai bufora
   for (uint8_t i = 0; i < bufSize; i++) {
     buf[i] = 0;
   }
+}
+
+void bufferResetPrint( String bufferName) {
+  Serial.println("\nCorrect RESET of " + bufferName + "\n");
+}
+
+void cleanBuffers(uint8_t *buf_1, uint8_t bufSize_1, uint8_t *buf_2, uint8_t bufSize_2, String bufferName_1, String bufferName_2 ) {
+  bufferReset(buf_1, bufSize_1);
+  bufferResetPrint( bufferName_1);
+  bufferReset(buf_2, bufSize_2);
+  bufferResetPrint( bufferName_2);
 }
