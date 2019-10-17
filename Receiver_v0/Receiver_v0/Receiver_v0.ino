@@ -34,6 +34,7 @@ uint8_t RxAddresses[5] = {0x0A, 0x0A, 0x0A, 0x0A, 0x01};
 
 /* Prototypes */
 void Blink(uint8_t ledPin = 0, uint16_t blinkTime = 200 );  //Funkcja z wartosciami domyslnymi
+doubleBlink(uint8_t ledPin_1, uint8_t ledPin_2, uint16_t blinkTime)
 void bufferReset(uint8_t *buf, uint8_t bufSize);
 void pinsInitPrint(String pinNum, String Name);
 
@@ -51,11 +52,12 @@ void setup() {
   pinMode(RX_PIN_LED, OUTPUT);
   pinsInitPrint(String(TX_PIN_LED), TxLedName);
   pinsInitPrint(String(RX_PIN_LED), RxLedName);
-  Blink(TX_PIN_LED);
-  Blink(RX_PIN_LED);
-  
+  doubleBlink
+// Blink(TX_PIN_LED);
+// Blink(RX_PIN_LED);
 
-  
+
+
 
 }
 
@@ -66,6 +68,42 @@ void loop() {
 
 
 /* Functions */
+
+boolean doubleBlink(uint8_t ledPin_1, uint8_t ledPin_2, uint16_t blinkTime) {
+  if ( ((ledPin_1 < 0) || (ledPin_1 > 13)) || ((ledPin_2 < 0) || (ledPin_2 > 13)) ) {
+    return false;
+  }
+  if ( blinkTime > 10000) {   //jezeli wieksze do 10 sek
+    blinkTime = 2000;
+  }
+
+  if ( digitalRead(ledPin_1) == HIGH || digitalRead(ledPin_2) == HIGH ) {       // high high
+    digitalWrite(ledPin_1, LOW);  digitalWrite(ledPin_2, LOW);
+    delay(blinkTime);
+    digitalWrite(ledPin_1, HIGH); digitalWrite(ledPin_2, HIGH);
+    return true;
+
+  } else if ( digitalRead(ledPin_1) == LOW || digitalRead(ledPin_2) == LOW ) {    //low low
+    digitalWrite(ledPin_1, HIGH); digitalWrite(ledPin_2, HIGH);
+    delay(blinkTime);
+    digitalWrite(ledPin_1, LOW);  digitalWrite(ledPin_2, LOW);
+    return true;
+
+  } else if ( digitalRead(ledPin_1) == LOW || digitalRead(ledPin_2) == HIGH) {    //low high
+    digitalWrite(ledPin_1, HIGH); digitalWrite(ledPin_2, LOW);
+    delay(blinkTime);
+    digitalWrite(ledPin_1, LOW);  digitalWrite(ledPin_2, HIGH);
+    return true;
+
+  } else if ( digitalRead(ledPin_1) == HIGH || digitalRead(ledPin_2) == LOW ) {   //high low
+    digitalWrite(ledPin_1, LOW); digitalWrite(ledPin_2, HIGH);
+    delay(blinkTime);
+    digitalWrite(ledPin_1, HIGH);  digitalWrite(ledPin_2, LOW);
+    return true;
+  } else {
+    return false;
+  }
+}
 
 void Blink(uint8_t ledPin, uint16_t blinkTime) {
   if ((ledPin < 0) || (ledPin > 13)) {
