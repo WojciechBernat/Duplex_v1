@@ -32,9 +32,9 @@ String RxBufName = "RxBuffer";
 
 uint16_t defaultBlinkTime = 0xFF;  // value of blink time - 255ms ;
 
-uint8_t RTxChannel = 64;              // 0 - 124
-uint8_t TxPowerLevel = RF24_PA_MIN;   //RF24_PA_MIN - -18dBm, RF24_PA_LOW - -12dBm, RF24_PA_HIGH - -6dBm, RF24_PA_MAX - 0dBm
-//RF24_250KBPS for 250kbs, RF24_1MBPS for 1Mbps, or RF24_2MBPS for 2Mbps
+uint8_t         RTxChannel = 64;              // 0 - 124
+rf24_pa_dbm_e   TxPowerLevel = RF24_PA_MIN;   //RF24_PA_MIN - -18dBm, RF24_PA_LOW - -12dBm, RF24_PA_HIGH - -6dBm, RF24_PA_MAX - 0dBm
+rf24_datarate_e TxDataRate = RF24_250KBPS;     //RF24_250KBPS for 250kbs, RF24_1MBPS for 1Mbps, or RF24_2MBPS for 2Mbps
 
 
 /* Arrays */
@@ -72,24 +72,9 @@ void setup() {
   pinsInit( TX_PIN_LED, RX_PIN_LED, TxLedName, RxLedName );
   /* Buffer reset - clean cells of arrays */
   cleanBuffers(TxBuffer, sizeof(TxBuffer), RxBuffer, sizeof(RxBuffer), TxBufName, RxBufName);
-
   /* Radio init */
-  radioInit(TxAddresses, RxAddresses, PIPE_ADDRESS_SIZE, RTxChannel,  RF24_PA_MIN, RF24_250KBPS );
-//  
-//  radio.begin();
-//  radio.openWritingPipe( TxAddresses );         //TX pipe address
-//  addressPrint(TxAddresses,PIPE_ADDRESS_SIZE );
-//  radio.openReadingPipe( 1, RxAddresses );      //RX pipe address
-//  addressPrint(RxAddresses,PIPE_ADDRESS_SIZE );
-//  
-//  radio.setChannel(RTxChannel);                 //Set TX/RX channel
-//  channelPrint(RTxChannel);
-//
-//  radio.setPALevel(RF24_PA_MIN) ;              //Set TX output power
-//  powerLevelPrint(RF24_PA_MIN);
-//
-//  radio.setDataRate(RF24_250KBPS);            //Set TX speed
-//  dataratePrint(RF24_250KBPS);
+  radioInit(TxAddresses, RxAddresses, PIPE_ADDRESS_SIZE, RTxChannel, TxPowerLevel, TxDataRate );
+
 
 
 }
