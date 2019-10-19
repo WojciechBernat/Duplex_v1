@@ -15,6 +15,7 @@
 /* Directives and Macros */
 #define PIPE_ADDRESS_SIZE  5    //Only 5 byte!
 #define BUFFER_SIZE        32   //
+#define MEAS_SIZE          3    //number of cells in ADCmeas
 
 #define UART_SPEED_48 4800
 #define UART_SPEED_96 9600
@@ -36,8 +37,16 @@ uint8_t         RTxChannel = 64;              // 0 - 124
 rf24_pa_dbm_e   TxPowerLevel = RF24_PA_MIN;   //RF24_PA_MIN - -18dBm, RF24_PA_LOW - -12dBm, RF24_PA_HIGH - -6dBm, RF24_PA_MAX - 0dBm
 rf24_datarate_e TxDataRate = RF24_250KBPS;     //RF24_250KBPS for 250kbs, RF24_1MBPS for 1Mbps, or RF24_2MBPS for 2Mbps
 
+uint8_t pinX = 0;   //number of pin to measure X axis 
+uint8_t pinY = 1;   // - || - Y axis
+uint8_t pinS = 2;   // - || - switch state
+uint8_t posX = 0;   //X axis value in ADCmeas array
+uint8_t posY = 1;   //Y - || -
+uint8_t posS = 2;   //switch state - || - 
 
 /* Arrays */
+uint8_t ADCmeas[MEAS_SIZE] = {0x00, 0x00};
+
 uint8_t TxBuffer[BUFFER_SIZE];
 uint8_t RxBuffer[BUFFER_SIZE];
 
@@ -75,13 +84,20 @@ void setup() {
   /* Radio init */
   radioInit(TxAddresses, RxAddresses, PIPE_ADDRESS_SIZE, RTxChannel, TxPowerLevel, TxDataRate );
 
-
-
 }
 
 void loop() {
+  /* ADC A0 measurement */
+   ADCmeas[posX] = analogRead(pinX);    //measure value of voltage on joystic for X axis
+   ADCmeas[posY] = analogRead(pinY);    // - || - for Y axis
+   ADCmeas[posS] = analogRead(pinS);    // - || - for switch state
 
+  /* Data proccessing */
 
+  /* Stop listening */
+  /* Start sending */
+  /* Stop sending */ 
+  /* Start listening */
 }
 
 
