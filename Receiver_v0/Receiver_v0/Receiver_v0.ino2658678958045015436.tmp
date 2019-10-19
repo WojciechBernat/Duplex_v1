@@ -76,7 +76,7 @@ void setup() {
   /* Buffer reset - clean cells of arrays */
   cleanBuffers(TxBuffer, sizeof(TxBuffer), RxBuffer, sizeof(RxBuffer), TxBufName, RxBufName);
   /* Radio init */
-  radioInit(RxAddresses, TxAddresses, PIPE_ADDRESS_SIZE, RTxChannel, TxPowerLevel, TxDataRate );
+  radioInit(TxAddresses, RxAddresses, PIPE_ADDRESS_SIZE, RTxChannel, TxPowerLevel, TxDataRate );
   
 }
 
