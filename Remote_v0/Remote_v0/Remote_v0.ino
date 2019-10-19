@@ -58,7 +58,7 @@ void addressPrint(uint8_t *buf, uint8_t bufSize);
 void channelPrint(uint8_t channel);
 void powerLevelPrint( rf24_pa_dbm_e power );
 void dataratePrint( rf24_datarate_e rate );
-void radioInit(uint8_t *TxADDR, uint8_t RxADDR, uint8_t channel,  rf24_pa_dbm_e power, rf24_datarate_e rate  );
+void radioInit(uint8_t *TxADDR, uint8_t *RxADDR, uint8_t addrSize, uint8_t channel, rf24_pa_dbm_e power, rf24_datarate_e rate );  //zastanowic sie nad inicjalziacja
 
 /* Init */
 RF24 radio(7, 8);    //Create an RF24 object - set CE - pin 7, CN - pin 8
@@ -74,20 +74,22 @@ void setup() {
   cleanBuffers(TxBuffer, sizeof(TxBuffer), RxBuffer, sizeof(RxBuffer), TxBufName, RxBufName);
 
   /* Radio init */
-  radio.begin();
-  radio.openWritingPipe( TxAddresses );         //TX pipe address
-  addressPrint(TxAddresses,PIPE_ADDRESS_SIZE );
-  radio.openReadingPipe( 1, RxAddresses );      //RX pipe address
-  addressPrint(RxAddresses,PIPE_ADDRESS_SIZE );
-  
-  radio.setChannel(RTxChannel);                 //Set TX/RX channel
-  channelPrint(RTxChannel);
-
-  radio.setPALevel(RF24_PA_MIN) ;              //Set TX output power
-  powerLevelPrint(RF24_PA_MIN);
-
-  radio.setDataRate(RF24_250KBPS);            //Set TX speed
-  dataratePrint(RF24_250KBPS);
+  radioInit(TxAddresses, RxAddresses, PIPE_ADDRESS_SIZE, RTxChannel,  RF24_PA_MIN, RF24_250KBPS );
+//  
+//  radio.begin();
+//  radio.openWritingPipe( TxAddresses );         //TX pipe address
+//  addressPrint(TxAddresses,PIPE_ADDRESS_SIZE );
+//  radio.openReadingPipe( 1, RxAddresses );      //RX pipe address
+//  addressPrint(RxAddresses,PIPE_ADDRESS_SIZE );
+//  
+//  radio.setChannel(RTxChannel);                 //Set TX/RX channel
+//  channelPrint(RTxChannel);
+//
+//  radio.setPALevel(RF24_PA_MIN) ;              //Set TX output power
+//  powerLevelPrint(RF24_PA_MIN);
+//
+//  radio.setDataRate(RF24_250KBPS);            //Set TX speed
+//  dataratePrint(RF24_250KBPS);
 
 
 }
@@ -229,7 +231,19 @@ void dataratePrint( rf24_datarate_e rate ) {
 
 
 
-void radioInit(uint8_t *TxADDR, uint8_t RxADDR, uint8_t channel,  rf24_pa_dbm_e power, rf24_datarate_e rate  ) {
+void radioInit(uint8_t *TxADDR, uint8_t *RxADDR, uint8_t addrSize, uint8_t channel,  rf24_pa_dbm_e power, rf24_datarate_e rate  ) {
+  radio.begin();
+  radio.openWritingPipe( TxADDR);         //TX pipe address
+  addressPrint(TxADDR, addrSize );
+  radio.openReadingPipe( 1, RxADDR);      //RX pipe address
+  addressPrint(RxADDR,addrSize);
+  
+  radio.setChannel(channel);                 //Set TX/RX channel
+  channelPrint(channel);
 
+  radio.setPALevel(power) ;              //Set TX output power
+  powerLevelPrint(power);
 
+  radio.setDataRate(rate);            //Set TX speed
+  dataratePrint(rate);
 }
