@@ -54,6 +54,7 @@ void bufferReset(uint8_t *buf, uint8_t bufSize);
 void bufferResetPrint( String bufferName);
 void cleanBuffers(uint8_t *buf_1, uint8_t bufSize_1, uint8_t *buf_2, uint8_t bufSize_2, String bufferName_1, String bufferName_2 );
 
+void addressPrint(uint8_t *buf, uint8_t bufSize);
 void channelPrint(uint8_t channel);
 void powerLevelPrint( rf24_pa_dbm_e power );
 void dataratePrint( rf24_datarate_e rate );
@@ -75,9 +76,9 @@ void setup() {
   /* Radio init */
   radio.begin();
   radio.openWritingPipe( TxAddresses );         //TX pipe address
-  Serial.println("\nSet TxAddress Pipeline ");
+  addressPrint(TxAddresses,PIPE_ADDRESS_SIZE );
   radio.openReadingPipe( 1, RxAddresses );      //RX pipe address
-  Serial.println("\nSet RxAddress Pipeline ");
+  addressPrint(RxAddresses,PIPE_ADDRESS_SIZE );
   
   radio.setChannel(RTxChannel);                 //Set TX/RX channel
   channelPrint(RTxChannel);
@@ -186,6 +187,13 @@ void cleanBuffers(uint8_t *buf_1, uint8_t bufSize_1, uint8_t *buf_2, uint8_t buf
   bufferResetPrint( bufferName_2);
 }
 
+
+void addressPrint(uint8_t *buf, uint8_t bufSize) {
+  Serial.print("\nSet TxAddress Pipeline: ");
+  for(int i = 0; i < bufSize; i++ ) {
+    Serial.print("\t " + (String(buf[i])) + "\t" );
+  }
+}
 
 void channelPrint(uint8_t channel) {
   Serial.println("\nSet RX & TX channel: " + (String(channel)));
