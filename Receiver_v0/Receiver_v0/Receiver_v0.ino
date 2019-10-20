@@ -34,6 +34,7 @@ uint8_t  SwitchON  = 0xF0;        // value of state switch ON
 uint8_t  SwitchOFF = 0x0F;        // value of state switch OFF
 uint16_t defaultBlinkTime = 0xFF;  // value of blink time - 255ms ;
 
+boolean         ReceiveState = false;         //state of received bytes
 uint8_t         RTxChannel = 64;              // 0 - 124
 rf24_pa_dbm_e   TxPowerLevel = RF24_PA_MIN;   //RF24_PA_MIN - -18dBm, RF24_PA_LOW - -12dBm, RF24_PA_HIGH - -6dBm, RF24_PA_MAX - 0dBm
 rf24_datarate_e TxDataRate = RF24_250KBPS;     //RF24_250KBPS for 250kbs, RF24_1MBPS for 1Mbps, or RF24_2MBPS for 2Mbps
@@ -57,6 +58,8 @@ void cleanBuffers(uint8_t *buf_1, uint8_t bufSize_1, uint8_t *buf_2, uint8_t buf
 
 void TxAddressPrint(uint8_t *buf, uint8_t bufSize);
 void RxAddressPrint(uint8_t *buf, uint8_t bufSize);
+void ReceivedDataPrint(uint8_t *buf, uint8_t bufSize);
+
 void channelPrint(uint8_t channel);
 void powerLevelPrint( rf24_pa_dbm_e power );
 void dataratePrint( rf24_datarate_e rate );
@@ -77,12 +80,24 @@ void setup() {
   cleanBuffers(TxBuffer, sizeof(TxBuffer), RxBuffer, sizeof(RxBuffer), TxBufName, RxBufName);
   /* Radio init */
   radioInit(RxAddresses, TxAddresses, PIPE_ADDRESS_SIZE, RTxChannel, TxPowerLevel, TxDataRate );
-  
+  radio.startListening();
 }
 
 void loop() {
-
-
+  /* Receive */
+  if(radio.available()) {                   //if it's somehting to receive
+    digitalWrite(RX_PIN_LED, HIGH);
+    RxBuffer[0] = ReceiveState = true;     //HARDCODE!    
+    while(radio.available()) {             //receive while all bytes will be received
+      radio.read(RxBuffer, BUFFER_SIZE);    //receive all 32 byte
+    }
+    digitalWrite(RX_PIN_LED, HIGH);
+  }
+  ReceivedDataPrint(RxBuffer, BUFFER_SIZE);
+  /* Transmit */
+   radio.stopListening();
+   radio.write(TxBuffer, BUFFER_SIZE);
+   radio.startListening();
 }
 
 
@@ -185,6 +200,13 @@ void TxAddressPrint(uint8_t *buf, uint8_t bufSize) {
 
 void RxAddressPrint(uint8_t *buf, uint8_t bufSize) {
   Serial.print("\nSet RxAddress Pipeline: ");
+  for(int i = 0; i < bufSize; i++ ) {
+    Serial.print("\t " + (String(buf[i])) + "\t" );
+  }
+}
+
+void ReceivedDataPrint(uint8_t *buf, uint8_t bufSize) {
+  Serial.print("\nReceived bytes from RX Buffer: ");
   for(int i = 0; i < bufSize; i++ ) {
     Serial.print("\t " + (String(buf[i])) + "\t" );
   }
