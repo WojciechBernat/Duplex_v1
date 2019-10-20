@@ -88,6 +88,7 @@ void setup() {
 }
 
 void loop() {
+  delay(500);
   /* ADC A0 measurement and Data proccessing */
    ADCmeas[posX] = map(analogRead(pinX), 0, 1023, 0, 255);    //measure value of voltage on joystic for X axis
    ADCmeas[posY] = map(analogRead(pinY), 0, 1023, 0, 255);    // - || - for Y axis
@@ -105,7 +106,7 @@ void loop() {
   radio.stopListening();
    /* Start sending */
   digitalWrite(TX_PIN_LED, HIGH);     //TX led set
-  radio.write(TxBuffer, 3);           //hardcoding 3 bytes to send
+  radio.write(TxBuffer, BUFFER_SIZE);           //hardcoding 3 bytes to send
   digitalWrite(TX_PIN_LED, LOW);
   
   /* Start listening */

@@ -14,7 +14,7 @@
 
 /* Directives and Macros */
 #define PIPE_ADDRESS_SIZE  5    //Only 5 byte!
-#define BUFFER_SIZE        32   //
+#define BUFFER_SIZE        8   //
 
 #define UART_SPEED_48 4800
 #define UART_SPEED_96 9600
@@ -85,9 +85,10 @@ void setup() {
 
 void loop() {
   /* Receive */
+  delay(1000);
   if(radio.available()) {                   //if it's somehting to receive
     digitalWrite(RX_PIN_LED, HIGH);
-    RxBuffer[0] = ReceiveState = true;     //HARDCODE!    
+    TxBuffer[0] = ReceiveState = true;     //HARDCODE!    
     while(radio.available()) {             //receive while all bytes will be received
       radio.read(RxBuffer, BUFFER_SIZE);    //receive all 32 byte
     }
