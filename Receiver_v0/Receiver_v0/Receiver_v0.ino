@@ -93,8 +93,8 @@ void loop() {
     }
     digitalWrite(RX_PIN_LED, HIGH);
   }
-  
   ReceivedDataPrint(RxBuffer, BUFFER_SIZE);
+  
   /* Transmit */
    radio.stopListening();
    radio.write(TxBuffer, BUFFER_SIZE);    //transmit
