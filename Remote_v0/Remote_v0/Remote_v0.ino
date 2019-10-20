@@ -30,6 +30,7 @@ String TxLedName = "TX LED";
 String RxLedName = "RX LED";
 String TxBufName = "TxBuffer";
 String RxBufName = "RxBuffer";
+String ADCBufName = "ADCmeas";
 
 uint16_t defaultBlinkTime = 0xFF;  // value of blink time - 255ms ;
 
@@ -87,17 +88,38 @@ void setup() {
 }
 
 void loop() {
-  /* ADC A0 measurement */
-   ADCmeas[posX] = analogRead(pinX);    //measure value of voltage on joystic for X axis
-   ADCmeas[posY] = analogRead(pinY);    // - || - for Y axis
-   ADCmeas[posS] = analogRead(pinS);    // - || - for switch state
-
-  /* Data proccessing */
-
+  /* ADC A0 measurement and Data proccessing */
+   ADCmeas[posX] = map(analogRead(pinX), 0, 1023, 0, 255);    //measure value of voltage on joystic for X axis
+   ADCmeas[posY] = map(analogRead(pinY), 0, 1023, 0, 255);    // - || - for Y axis
+   ADCmeas[posS] = map(analogRead(pinS), 0, 1023, 0, 255);    // - || - for switch state
+   Serial.println("\nMeasured joystic position: \nX axis: " + (String(ADCmeas[posX])) + "\nY axis: " + (String(ADCmeas[posY])) + "\nSwitch: " + (String(ADCmeas[posS])));
+   Serial.println("\nTX Buffer content: \n");
+   for(uint8_t j = 0; j < sizeof(ADCmeas) ; j++) {
+     TxBuffer[j] = ADCmeas[j];
+     Serial.println("\t" + (String(TxBuffer[j])) );
+   }
+   bufferReset(ADCmeas, sizeof(ADCmeas));
+   bufferResetPrint(ADCBufName);
+   
   /* Stop listening */
-  /* Start sending */
-  /* Stop sending */ 
+  radio.stopListening();
+   /* Start sending */
+  digitalWrite(TX_PIN_LED, HIGH);     //TX led set
+  radio.write(TxBuffer, 3);           //hardcoding 3 bytes to send
+  digitalWrite(TX_PIN_LED, LOW);
+  
   /* Start listening */
+  radio.startListening();
+  if(radio.available()) {
+    digitalWrite(RX_PIN_LED, HIGH);
+    while(radio.available()) {
+      radio.read(RxBuffer, sizeof(RxBuffer));
+    }
+    digitalWrite(RX_PIN_LED, LOW);
+  }
+  
+
+  
 }
 
 
@@ -229,7 +251,6 @@ void dataratePrint( rf24_datarate_e rate ) {
     Serial.println("\nSet data rate: 250kbps");
   }
 }
-
 
 
 void radioInit(uint8_t *TxADDR, uint8_t *RxADDR, uint8_t addrSize, uint8_t channel,  rf24_pa_dbm_e power, rf24_datarate_e rate  ) {
