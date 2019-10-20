@@ -34,7 +34,7 @@ String ADCBufName = "ADCmeas";
 
 uint16_t defaultBlinkTime = 0xFF;  // value of blink time - 255ms ;
 
-uint8_t         RTxChannel = 64;              // 0 - 124
+uint8_t RTxChannel = 125;              // 0 - 124
 rf24_pa_dbm_e   TxPowerLevel = RF24_PA_MIN;   //RF24_PA_MIN - -18dBm, RF24_PA_LOW - -12dBm, RF24_PA_HIGH - -6dBm, RF24_PA_MAX - 0dBm
 rf24_datarate_e TxDataRate = RF24_250KBPS;     //RF24_250KBPS for 250kbs, RF24_1MBPS for 1Mbps, or RF24_2MBPS for 2Mbps
 
@@ -88,17 +88,18 @@ void setup() {
   /* Buffer reset - clean cells of arrays */
   cleanBuffers(TxBuffer, sizeof(TxBuffer), RxBuffer, sizeof(RxBuffer), TxBufName, RxBufName);
   /* Radio init */
-//  radioInit(TxAddresses, RxAddresses, PIPE_ADDRESS_SIZE, RTxChannel, TxPowerLevel, TxDataRate );
   radio.begin();
-  radio.openWritingPipe(TxAddresses);   //added to debug
+//  radioInit(TxAddresses, RxAddresses, PIPE_ADDRESS_SIZE, 125, TxPowerLevel, TxDataRate );
+//  radio.begin();
+//  radio.openWritingPipe(TxAddresses);   //added to debug
 //  radio.openReadingPipe(1,RxAddresses);
-  radio.setPALevel(RF24_PA_MIN);
+//  radio.setPALevel(RF24_PA_MIN);
   Serial.println("Radio INIT done");
   
 }
 
 void loop() {
-  delay(500);
+  delay(100);
   /* ADC A0 measurement and Data proccessing */
    ADCmeas[posX] = map(analogRead(pinX), 0, 1023, 0, 255);    //measure value of voltage on joystic for X axis
    ADCmeas[posY] = map(analogRead(pinY), 0, 1023, 0, 255);    // - || - for Y axis
@@ -301,18 +302,22 @@ void dataratePrint( rf24_datarate_e rate ) {
 
 
 void radioInit(uint8_t *TxADDR, uint8_t *RxADDR, uint8_t addrSize, uint8_t channel,  rf24_pa_dbm_e power, rf24_datarate_e rate  ) {
-  radio.begin();
+  
+  radio.setChannel(channel);                 //Set TX/RX channel
+  radio.setPALevel(power) ;              //Set TX output power
+  radio.setDataRate(rate);            //Set TX speed
+  radio.setAutoAck(1);
+  radio.setRetries(2,15);
+  radio.setCRCLength(RF24_CRC_8);
+  
+  channelPrint( radio.getChannel() );
+  powerLevelPrint(power);
+  dataratePrint(rate);
+  
   radio.openWritingPipe( TxADDR);         //TX pipe address
   TxAddressPrint(TxADDR, addrSize );
   radio.openReadingPipe( 1, RxADDR);      //RX pipe address
   RxAddressPrint(RxADDR,addrSize);
   
-//  radio.setChannel(channel);                 //Set TX/RX channel
-//  channelPrint(channel);
-//
-//  radio.setPALevel(power) ;              //Set TX output power
-//  powerLevelPrint(power);
-//
-//  radio.setDataRate(rate);            //Set TX speed
-//  dataratePrint(rate);
+
 }
