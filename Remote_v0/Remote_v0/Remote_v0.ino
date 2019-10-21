@@ -88,18 +88,22 @@ void setup() {
   /* Buffer reset - clean cells of arrays */
   cleanBuffers(TxBuffer, sizeof(TxBuffer), RxBuffer, sizeof(RxBuffer), TxBufName, RxBufName);
   /* Radio init */
-  radio.begin();
 //  radioInit(TxAddresses, RxAddresses, PIPE_ADDRESS_SIZE, 125, TxPowerLevel, TxDataRate );
-//  radio.begin();
-//  radio.openWritingPipe(TxAddresses);   //added to debug
-//  radio.openReadingPipe(1,RxAddresses);
-//  radio.setPALevel(RF24_PA_MIN);
+  radio.begin();
+  radio.openWritingPipe(TxAddresses);   //added to debug
+  radio.openReadingPipe(1,RxAddresses);
+  radio.setPALevel(RF24_PA_MIN);
+  Serial.println("\n PA level " + (String(radio.getPALevel())));
+  radio.setDataRate(TxDataRate);
+  Serial.println("\n Data rate " + (String(radio.getDataRate())));
+  radio.setChannel(RTxChannel);
+  Serial.println("\n Channel" + (String(radio.getChannel())));
   Serial.println("Radio INIT done");
   
 }
 
 void loop() {
-  delay(100);
+//  delay(1);
   /* ADC A0 measurement and Data proccessing */
    ADCmeas[posX] = map(analogRead(pinX), 0, 1023, 0, 255);    //measure value of voltage on joystic for X axis
    ADCmeas[posY] = map(analogRead(pinY), 0, 1023, 0, 255);    // - || - for Y axis

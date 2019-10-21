@@ -84,13 +84,19 @@ void setup() {
   radio.openWritingPipe(TxAddresses);   //added to debug
   radio.openReadingPipe(1,RxAddresses);
   radio.setPALevel(RF24_PA_MIN);
-
+  Serial.println("\n PA level " + (String(radio.getPALevel())));
+  radio.setDataRate(TxDataRate);
+  Serial.println("\n PA level " + (String(radio.getDataRate())));
+  radio.setChannel(RTxChannel);
+  Serial.println("\n Channel" + (String(radio.getChannel())));
+  radio.setAutoAck(1);  
+  Serial.println("Radio INIT done");
   radio.startListening();
 }
 
 void loop() {
   /* Receive */
-  delay(100);
+//  delay(100);
   if(radio.available()) {                   //if it's somehting to receive
     digitalWrite(RX_PIN_LED, HIGH);
     //TxBuffer[0] = ReceiveState = true;     //HARDCODE!    
@@ -274,7 +280,7 @@ void radioInit(uint8_t *TxADDR, uint8_t *RxADDR, uint8_t addrSize, uint8_t chann
   TxAddressPrint(TxADDR, addrSize );
   radio.openReadingPipe( 1, RxADDR);      //RX pipe address
   RxAddressPrint(RxADDR,addrSize);
-  
+  radio.powerUp();  
   radio.startListening();
 
 }
