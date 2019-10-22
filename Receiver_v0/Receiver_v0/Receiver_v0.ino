@@ -41,6 +41,10 @@ uint8_t         RTxChannel   = 125;              // 0 - 125
 rf24_pa_dbm_e   TxPowerLevel = RF24_PA_MIN;      //RF24_PA_MIN - -18dBm, RF24_PA_LOW - -12dBm, RF24_PA_HIGH - -6dBm, RF24_PA_MAX - 0dBm
 rf24_datarate_e TxDataRate   = RF24_250KBPS;     //RF24_250KBPS for 250kbs, RF24_1MBPS for 1Mbps, or RF24_2MBPS for 2Mbps
 
+boolean RxState = false;
+uint8_t timeOut = 4;
+uint8_t timeOutCounter = 0;
+
 /* Arrays */
 uint8_t TxBuffer[BUFFER_SIZE];
 uint8_t RxBuffer[BUFFER_SIZE];
@@ -90,16 +94,16 @@ void setup() {
   Serial.println("\n PA level " + (String(Receiver.getDataRate())));
   
   Receiver.setChannel(RTxChannel);            //Channel 
-  Serial.println("\n Channel" + (String(Receiver.getChannel())));
+  Serial.println("\n Channel " + (String(Receiver.getChannel())));
   
   Receiver.setAutoAck(ACKEnable);                     //ACK
-  Serial.println("Receiver INIT done");
+  Serial.println("\nReceiver INIT done");
   Receiver.startListening();
 }
 
 void loop() {
   /* Receive */
-  delay(10);
+//  delay(100);
   if(Receiver.available()) {                   //if it's somehting to receive
     digitalWrite(RX_PIN_LED, HIGH);
     while(Receiver.available()) {             //receive while all bytes will be received

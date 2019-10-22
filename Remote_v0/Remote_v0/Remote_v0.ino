@@ -40,6 +40,10 @@ uint8_t         RTxChannel   = 125;              // 0 - 124
 rf24_pa_dbm_e   TxPowerLevel = RF24_PA_MIN;      //RF24_PA_MIN - -18dBm, RF24_PA_LOW - -12dBm, RF24_PA_HIGH - -6dBm, RF24_PA_MAX - 0dBm
 rf24_datarate_e TxDataRate = RF24_250KBPS;       //RF24_250KBPS for 250kbs, RF24_1MBPS for 1Mbps, or RF24_2MBPS for 2Mbps
 
+boolean RxState = false;
+uint8_t timeOut = 4;
+uint8_t timeOutCounter = 0;
+
 uint8_t pinX = 0;   //number of pin to measure X axis 
 uint8_t pinY = 1;   // - || - Y axis
 uint8_t pinS = 2;   // - || - switch state
@@ -98,10 +102,10 @@ void setup() {
   Serial.println("\n Data rate " + (String(radio.getDataRate())));
   
   radio.setChannel(RTxChannel);            //Channel 
-  Serial.println("\n Channel" + (String(radio.getChannel())));
+  Serial.println("\n Channel " + (String(radio.getChannel())));
   
   radio.setAutoAck(ACKEnable);                    //ACK
-  Serial.println("Radio INIT done");
+  Serial.println("\nRadio INIT done");
   
 }
 
@@ -119,7 +123,7 @@ void loop() {
    
   /* Transmit */
   radio.stopListening();
-  delay(100);
+  //delay(100);
    /* Start sending */
   digitalWrite(TX_PIN_LED, HIGH);     //TX led set
   if(radio.write(TxBuffer, BUFFER_SIZE))  {
@@ -129,14 +133,26 @@ void loop() {
   
   /* Receive */
   radio.startListening();
- if(radio.available()) {
-    digitalWrite(RX_PIN_LED, HIGH);
-    while(radio.available()) {
-     radio.read(RxBuffer, sizeof(RxBuffer));
-     DataPrint(RxBuffer, BUFFER_SIZE,RxBufName);
+  RxState = false;
+  while(!RxState) {
+    if(radio.available()) {
+        digitalWrite(RX_PIN_LED, HIGH);
+        while(radio.available()) {
+           radio.read(RxBuffer, sizeof(RxBuffer));
+           DataPrint(RxBuffer, BUFFER_SIZE,RxBufName);
+        }
+        digitalWrite(RX_PIN_LED, LOW);
+        RxState = true;
     }
-    digitalWrite(RX_PIN_LED, LOW);
+    else {
+          timeOutCounter++;
+    }
+    if(timeOutCounter == timeOut) {
+      RxState = true;
+      uint8_t timeOutCounter = 0;
+    }
   }
+
 }
 
 
