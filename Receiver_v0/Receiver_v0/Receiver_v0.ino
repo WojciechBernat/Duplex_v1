@@ -36,6 +36,7 @@ uint16_t defaultBlinkTime = 0xFF;    // value of blink time - 255ms ;
 
 /* RF settings */
 boolean         ReceiveState = false;            //state of received bytes
+boolean         ACKEnable    = true;
 uint8_t         RTxChannel   = 125;              // 0 - 125
 rf24_pa_dbm_e   TxPowerLevel = RF24_PA_MIN;      //RF24_PA_MIN - -18dBm, RF24_PA_LOW - -12dBm, RF24_PA_HIGH - -6dBm, RF24_PA_MAX - 0dBm
 rf24_datarate_e TxDataRate   = RF24_250KBPS;     //RF24_250KBPS for 250kbs, RF24_1MBPS for 1Mbps, or RF24_2MBPS for 2Mbps
@@ -79,6 +80,8 @@ void setup() {
   Receiver.begin();
   Receiver.openWritingPipe(TxAddresses);      //TX pipeline address
   Receiver.openReadingPipe(1,RxAddresses);    //RX pipeline address
+  setBufferPrint(TxAddresses, BUFFER_SIZE,TxBufName);
+  setBufferPrint(RxAddresses, BUFFER_SIZE,RxBufName);
   
   Receiver.setPALevel(RF24_PA_MIN);           //PA power level
   Serial.println("\n PA level " + (String(Receiver.getPALevel())));
@@ -89,7 +92,7 @@ void setup() {
   Receiver.setChannel(RTxChannel);            //Channel 
   Serial.println("\n Channel" + (String(Receiver.getChannel())));
   
-  Receiver.setAutoAck(1);                     //ACK
+  Receiver.setAutoAck(ACKEnable);                     //ACK
   Serial.println("Receiver INIT done");
   Receiver.startListening();
 }
@@ -99,12 +102,12 @@ void loop() {
 //  delay(100);
   if(Receiver.available()) {                   //if it's somehting to receive
     digitalWrite(RX_PIN_LED, HIGH);
-    //TxBuffer[0] = ReceiveState = true;     //HARDCODE!    
     while(Receiver.available()) {             //receive while all bytes will be received
       Receiver.read(RxBuffer, BUFFER_SIZE);    //receive all 32 byte
     }
     DataPrint(RxBuffer, BUFFER_SIZE, RxBufName);
     digitalWrite(RX_PIN_LED, HIGH);
+    TxBuffer[0] = ReceiveState = true; 
   }
   
   /* Transmit */
