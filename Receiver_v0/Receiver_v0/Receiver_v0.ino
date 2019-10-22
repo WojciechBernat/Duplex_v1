@@ -21,8 +21,8 @@
 #define UART_SPEED_288 28800
 #define UART_SPEED_115 115200
 
-#define TX_PIN_LED 6
-#define RX_PIN_LED 5
+#define TX_PIN_LED 5
+#define RX_PIN_LED 6
 
 /* Variables */
 String TxLedName = "TX LED";
@@ -120,6 +120,7 @@ void loop() {
    
    Receiver.startListening();
 }
+/* End of loop() */
 
 
 /* Functions */

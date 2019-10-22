@@ -128,18 +128,16 @@ void loop() {
   digitalWrite(TX_PIN_LED, LOW);
   
   /* Receive */
-//  radio.startListening();
-//  if(radio.available()) {
-//    digitalWrite(RX_PIN_LED, HIGH);
-//    while(radio.available()) {
-//      radio.read(RxBuffer, sizeof(RxBuffer));
-//    }
-//    digitalWrite(RX_PIN_LED, LOW);
-//  }
-  
-
-  
+  radio.startListening();
+ if(radio.available()) {
+    digitalWrite(RX_PIN_LED, HIGH);
+    while(radio.available()) {
+     radio.read(RxBuffer, sizeof(RxBuffer));
+    }
+    digitalWrite(RX_PIN_LED, LOW);
+  }
 }
+/* End of loop() */
 
 
 /* Functions */
