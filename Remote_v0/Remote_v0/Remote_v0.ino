@@ -119,7 +119,7 @@ void loop() {
    
   /* Transmit */
   radio.stopListening();
-  delay(1000);
+  delay(100);
    /* Start sending */
   digitalWrite(TX_PIN_LED, HIGH);     //TX led set
   if(radio.write(TxBuffer, BUFFER_SIZE))  {
@@ -133,11 +133,11 @@ void loop() {
     digitalWrite(RX_PIN_LED, HIGH);
     while(radio.available()) {
      radio.read(RxBuffer, sizeof(RxBuffer));
+     DataPrint(RxBuffer, BUFFER_SIZE,RxBufName);
     }
     digitalWrite(RX_PIN_LED, LOW);
   }
 }
-/* End of loop() */
 
 
 /* Functions */

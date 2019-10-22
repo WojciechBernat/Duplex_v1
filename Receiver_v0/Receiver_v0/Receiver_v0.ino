@@ -99,24 +99,28 @@ void setup() {
 
 void loop() {
   /* Receive */
-//  delay(100);
+  delay(10);
   if(Receiver.available()) {                   //if it's somehting to receive
     digitalWrite(RX_PIN_LED, HIGH);
     while(Receiver.available()) {             //receive while all bytes will be received
       Receiver.read(RxBuffer, BUFFER_SIZE);    //receive all 32 byte
     }
-    DataPrint(RxBuffer, BUFFER_SIZE, RxBufName);
-    digitalWrite(RX_PIN_LED, HIGH);
-    TxBuffer[0] = ReceiveState = true; 
+    DataPrint(RxBuffer, BUFFER_SIZE, RxBufName);    //Print received data
+    digitalWrite(RX_PIN_LED, LOW);                 //trun off RX LED
+    
+    TxBuffer[0] = ReceiveState = true;              //Save state of receive
   }
   
   /* Transmit */
-//   Receiver.stopListening();
-//   Receiver.write(TxBuffer, BUFFER_SIZE);    //transmit
-//   
-//   ReceiveState = false;                 //reset state
-//   bufferReset(RxBuffer, BUFFER_SIZE);    //reset buffers
-//   bufferReset(TxBuffer, BUFFER_SIZE);
+   Receiver.stopListening();
+   digitalWrite(TX_PIN_LED, HIGH);
+   if(Receiver.write(TxBuffer, BUFFER_SIZE))  {    //feedback trasmittion - status of received transmittion 
+      DataPrint(TxBuffer, BUFFER_SIZE, TxBufName);
+   }
+   digitalWrite(TX_PIN_LED, LOW);
+   ReceiveState = false;                  //reset state
+   bufferReset(RxBuffer, BUFFER_SIZE);    //reset buffers
+   bufferReset(TxBuffer, BUFFER_SIZE);    
    
    Receiver.startListening();
 }
