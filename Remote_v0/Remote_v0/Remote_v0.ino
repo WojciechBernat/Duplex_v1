@@ -106,31 +106,25 @@ void setup() {
 }
 
 void loop() {
-//  delay(1);
   /* ADC A0 measurement and Data proccessing */
    ADCmeas[posX] = map(analogRead(pinX), 0, 1023, 0, 255);    //measure value of voltage on joystic for X axis
    ADCmeas[posY] = map(analogRead(pinY), 0, 1023, 0, 255);    // - || - for Y axis
    ADCmeas[posS] = map(analogRead(pinS), 0, 1023, 0, 255);    // - || - for switch state
-//   Serial.println("\nMeasured joystic position: \nX axis: " + (String(ADCmeas[posX])) + "\nY axis: " + (String(ADCmeas[posY])) + "\nSwitch: " + (String(ADCmeas[posS])));
-//   Serial.println("\nTX Buffer content: \n");
+
+   /* Copy ADCmeas on TxBuffer */
    for(uint8_t j = 0; j < sizeof(ADCmeas) ; j++) {
      TxBuffer[j] = ADCmeas[j];
-//     Serial.println("\t" + (String(TxBuffer[j])) );
    }
    bufferReset(ADCmeas, sizeof(ADCmeas));
-//   bufferResetPrint(ADCBufName);
    
   /* Transmit */
   radio.stopListening();
-  delay(100);
+  delay(1000);
    /* Start sending */
   digitalWrite(TX_PIN_LED, HIGH);     //TX led set
-//  boolean state = radio.write(TxBuffer, BUFFER_SIZE);
-//  Serial.println("\n---------" + String(state) + "-------\n");
   if(radio.write(TxBuffer, BUFFER_SIZE))  {
       DataPrint(TxBuffer, BUFFER_SIZE, TxBufName);
   }
-
   digitalWrite(TX_PIN_LED, LOW);
   
   /* Receive */
