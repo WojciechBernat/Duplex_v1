@@ -34,9 +34,11 @@ String ADCBufName = "ADCmeas";
 
 uint16_t defaultBlinkTime = 0xFF;  // value of blink time - 255ms ;
 
-uint8_t         RTxChannel = 64;              // 0 - 124
-rf24_pa_dbm_e   TxPowerLevel = RF24_PA_MIN;   //RF24_PA_MIN - -18dBm, RF24_PA_LOW - -12dBm, RF24_PA_HIGH - -6dBm, RF24_PA_MAX - 0dBm
-rf24_datarate_e TxDataRate = RF24_250KBPS;     //RF24_250KBPS for 250kbs, RF24_1MBPS for 1Mbps, or RF24_2MBPS for 2Mbps
+boolean         ReceiveState = false;            //state of received bytes
+boolean         ACKEnable    = true;
+uint8_t         RTxChannel   = 125;              // 0 - 124
+rf24_pa_dbm_e   TxPowerLevel = RF24_PA_MIN;      //RF24_PA_MIN - -18dBm, RF24_PA_LOW - -12dBm, RF24_PA_HIGH - -6dBm, RF24_PA_MAX - 0dBm
+rf24_datarate_e TxDataRate = RF24_250KBPS;       //RF24_250KBPS for 250kbs, RF24_1MBPS for 1Mbps, or RF24_2MBPS for 2Mbps
 
 uint8_t pinX = 0;   //number of pin to measure X axis 
 uint8_t pinY = 1;   // - || - Y axis
@@ -64,11 +66,9 @@ void bufferReset(uint8_t *buf, uint8_t bufSize);
 void bufferResetPrint( String bufferName);
 void cleanBuffers(uint8_t *buf_1, uint8_t bufSize_1, uint8_t *buf_2, uint8_t bufSize_2, String bufferName_1, String bufferName_2 );
 
-void addressPrint(uint8_t *buf, uint8_t bufSize);
-void channelPrint(uint8_t channel);
-void powerLevelPrint( rf24_pa_dbm_e power );
-void dataratePrint( rf24_datarate_e rate );
-void radioInit(uint8_t *TxADDR, uint8_t *RxADDR, uint8_t addrSize, uint8_t channel, rf24_pa_dbm_e power, rf24_datarate_e rate );  //zastanowic sie nad inicjalziacja
+void bufferPrint(uint8_t *buf, uint8_t bufSize);
+void setBufferPrint(uint8_t *buf, uint8_t bufSize, String bufferName);
+void DataPrint(uint8_t *buf, uint8_t bufSize, String bufferName);
 
 /* Init */
 RF24 radio(7, 8);    //Create an RF24 object - set CE - pin 7, CN - pin 8
@@ -80,11 +80,29 @@ void setup() {
 
   /* Pin init */
   pinsInit( TX_PIN_LED, RX_PIN_LED, TxLedName, RxLedName );
+  
   /* Buffer reset - clean cells of arrays */
   cleanBuffers(TxBuffer, sizeof(TxBuffer), RxBuffer, sizeof(RxBuffer), TxBufName, RxBufName);
+  
   /* Radio init */
-  radioInit(TxAddresses, RxAddresses, PIPE_ADDRESS_SIZE, RTxChannel, TxPowerLevel, TxDataRate );
-
+  radio.begin();
+  radio.openWritingPipe(TxAddresses);     //TX pipeline address
+  radio.openReadingPipe(1,RxAddresses);   //RX pipeline address
+  setBufferPrint(TxAddresses, BUFFER_SIZE,TxBufName);
+  setBufferPrint(RxAddresses, BUFFER_SIZE,RxBufName);
+  
+  radio.setPALevel(RF24_PA_MIN);          //PA power level
+  Serial.println("\n PA level " + (String(radio.getPALevel())));
+  
+  radio.setDataRate(TxDataRate);          //Data Rate
+  Serial.println("\n Data rate " + (String(radio.getDataRate())));
+  
+  radio.setChannel(RTxChannel);            //Channel 
+  Serial.println("\n Channel" + (String(radio.getChannel())));
+  
+  radio.setAutoAck(ACKEnable);                    //ACK
+  Serial.println("Radio INIT done");
+  
 }
 
 void loop() {
@@ -92,31 +110,32 @@ void loop() {
    ADCmeas[posX] = map(analogRead(pinX), 0, 1023, 0, 255);    //measure value of voltage on joystic for X axis
    ADCmeas[posY] = map(analogRead(pinY), 0, 1023, 0, 255);    // - || - for Y axis
    ADCmeas[posS] = map(analogRead(pinS), 0, 1023, 0, 255);    // - || - for switch state
-   Serial.println("\nMeasured joystic position: \nX axis: " + (String(ADCmeas[posX])) + "\nY axis: " + (String(ADCmeas[posY])) + "\nSwitch: " + (String(ADCmeas[posS])));
-   Serial.println("\nTX Buffer content: \n");
+
+   /* Copy ADCmeas on TxBuffer */
    for(uint8_t j = 0; j < sizeof(ADCmeas) ; j++) {
      TxBuffer[j] = ADCmeas[j];
-     Serial.println("\t" + (String(TxBuffer[j])) );
    }
    bufferReset(ADCmeas, sizeof(ADCmeas));
-   bufferResetPrint(ADCBufName);
    
-  /* Stop listening */
+  /* Transmit */
   radio.stopListening();
+  delay(1000);
    /* Start sending */
   digitalWrite(TX_PIN_LED, HIGH);     //TX led set
-  radio.write(TxBuffer, 3);           //hardcoding 3 bytes to send
+  if(radio.write(TxBuffer, BUFFER_SIZE))  {
+      DataPrint(TxBuffer, BUFFER_SIZE, TxBufName);
+  }
   digitalWrite(TX_PIN_LED, LOW);
   
-  /* Start listening */
-  radio.startListening();
-  if(radio.available()) {
-    digitalWrite(RX_PIN_LED, HIGH);
-    while(radio.available()) {
-      radio.read(RxBuffer, sizeof(RxBuffer));
-    }
-    digitalWrite(RX_PIN_LED, LOW);
-  }
+  /* Receive */
+//  radio.startListening();
+//  if(radio.available()) {
+//    digitalWrite(RX_PIN_LED, HIGH);
+//    while(radio.available()) {
+//      radio.read(RxBuffer, sizeof(RxBuffer));
+//    }
+//    digitalWrite(RX_PIN_LED, LOW);
+//  }
   
 
   
@@ -194,7 +213,7 @@ void pinsInit( uint8_t LedPin_1, uint8_t LedPin_2, String Name_1, String Name_2 
   doubleBlink(LedPin_1, LedPin_2);           //toDebug
 }
 
-
+/* Clean arrays functions */
 void bufferReset(uint8_t *buf, uint8_t bufSize) {            //Funkcja resetowanai bufora
   for (uint8_t i = 0; i < bufSize; i++) {
     buf[i] = 0;
@@ -212,60 +231,26 @@ void cleanBuffers(uint8_t *buf_1, uint8_t bufSize_1, uint8_t *buf_2, uint8_t buf
   bufferResetPrint( bufferName_2);
 }
 
-
-void addressPrint(uint8_t *buf, uint8_t bufSize) {
-  Serial.print("\nSet TxAddress Pipeline: ");
-  for(int i = 0; i < bufSize; i++ ) {
-    Serial.print("\t " + (String(buf[i])) + "\t" );
+/* Print content arrays functions */
+void bufferPrint(uint8_t *buf, uint8_t bufSize) {
+    for(int i = 0; i < bufSize; i++ ) {
+    Serial.print("\t " + (String(buf[i])) + " " );
   }
 }
 
-void channelPrint(uint8_t channel) {
-  Serial.println("\nSet RX & TX channel: " + (String(channel)));
-}
-
-void powerLevelPrint( rf24_pa_dbm_e power ) {
-
-  if (power == 0) {
-    Serial.println("\nSet TX power: -18dBm");
-  }
-  else if (power == 1) {
-    Serial.println("\nSet TX power: -12dBm");
-  }
-  else if ( power == 2) {
-    Serial.println("\nSet TX power: -6dBm");
-  }
-  else if ( power == 3) {
-    Serial.println("\nSet TX power: 0dBm");
-  }
-}
-
-void dataratePrint( rf24_datarate_e rate ) {
-  if (rate == 0) {
-    Serial.println("\nSet data rate: 1Mbps");
-  }
-  else if (rate== 1) {
-    Serial.println("\nSet data rate: 2Mbps");
-  }
-  else if (rate == 2) {
-    Serial.println("\nSet data rate: 250kbps");
-  }
+void setBufferPrint(uint8_t *buf, uint8_t bufSize, String bufferName) {
+  Serial.print("\nSet " + bufferName + " Pipeline: ");
+  bufferPrint(buf, bufSize);
 }
 
 
-void radioInit(uint8_t *TxADDR, uint8_t *RxADDR, uint8_t addrSize, uint8_t channel,  rf24_pa_dbm_e power, rf24_datarate_e rate  ) {
-  radio.begin();
-  radio.openWritingPipe( TxADDR);         //TX pipe address
-  addressPrint(TxADDR, addrSize );
-  radio.openReadingPipe( 1, RxADDR);      //RX pipe address
-  addressPrint(RxADDR,addrSize);
-  
-  radio.setChannel(channel);                 //Set TX/RX channel
-  channelPrint(channel);
-
-  radio.setPALevel(power) ;              //Set TX output power
-  powerLevelPrint(power);
-
-  radio.setDataRate(rate);            //Set TX speed
-  dataratePrint(rate);
+void DataPrint(uint8_t *buf, uint8_t bufSize, String bufferName) {
+  if(bufferName == "TxBuffer")  {
+    Serial.print("\nTransmited bytes from TX Buffer: ");
+    bufferPrint(buf, bufSize);
+  }
+  if(bufferName == "RxBuffer")  {
+    Serial.print("\nReceived bytes from RX Buffer: ");
+    bufferPrint(buf, bufSize);
+  }
 }
