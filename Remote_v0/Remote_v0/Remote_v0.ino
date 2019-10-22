@@ -98,6 +98,7 @@ void setup() {
   Serial.println("\n Data rate " + (String(radio.getDataRate())));
   radio.setChannel(RTxChannel);
   Serial.println("\n Channel" + (String(radio.getChannel())));
+  radio.setAutoAck(1);  
   Serial.println("Radio INIT done");
   
 }
