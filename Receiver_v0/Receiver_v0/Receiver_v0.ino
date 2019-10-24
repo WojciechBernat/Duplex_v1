@@ -115,7 +115,7 @@ void loop() {
     TxBuffer[0] = ReceiveState = true;              //Save state of receive
   }
   
-  /* Transmit */
+  /* Transmit */  
    Receiver.stopListening();
    digitalWrite(TX_PIN_LED, HIGH);
    if(Receiver.write(TxBuffer, BUFFER_SIZE))  {    //feedback trasmittion - status of received transmittion 
